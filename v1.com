@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crescimento do Apollo</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --surface: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success-bg: #ecfdf5;
+      --success-text: #065f46;
+      --error-bg: #fef2f2;
+      --error-text: #991b1b;
+      --radius: 16px;
+      --shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px 16px 40px;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    header h1 {
+      font-size: 1.55rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    header p {
+      font-size: 0.92rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #e9eef5;
+      padding: 5px;
+      border-radius: 14px;
+      margin-bottom: 22px;
+      gap: 6px;
+    }
+
+    .tab-btn {
+      border: none;
+      background: transparent;
+      padding: 11px 16px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      background: var(--surface);
+      color: var(--primary);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    }
+
+    .section {
+      display: none;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      margin-bottom: 18px;
+    }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    @media (min-width: 560px) {
+      .form-grid.two-cols {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .field label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 1rem;
+      color: var(--text);
+      background: #fcfdff;
+    }
+
+    .field input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .hint {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 5px;
+    }
+
+    .btn-primary {
+      width: 100%;
+      margin-top: 18px;
+      padding: 13px 20px;
+      border: none;
+      border-radius: 11px;
+      background: var(--primary);
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+    }
+
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .alert {
+      display: none;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-top: 14px;
+    }
+
+    .alert.success { display: block; background: var(--success-bg); color: var(--success-text); }
+    .alert.error { display: block; background: var(--error-bg); color: var(--error-text); }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    @media (min-width: 600px) {
+      .stats-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-label {
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .stat-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    .badge-pos { color: #047857; font-weight: 600; }
+    .badge-neg { color: #dc2626; font-weight: 600; }
+
+    .chart-box {
+      position: relative;
+      height: 270px;
+      width: 100%;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 28px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Crescimento do Apollo</h1>
+      <p>Acompanhamento de peso e altura</p>
+    </header>
+
+    <div class="tabs">
+      <button class="tab-btn active" id="btnTabRegistro" onclick="trocarAba('registro')">
+        Novo Registro
+      </button>
+      <button class="tab-btn" id="btnTabGraficos" onclick="trocarAba('graficos')">
+        Gráficos
+      </button>
+    </div>
+
+    <!-- ABA 1: REGISTRO -->
+    <section id="sec-registro" class="section active">
+      <div class="card">
+        <div class="card-title">Lançar Medição</div>
+        <form id="formMedicao" onsubmit="enviarFormulario(event)">
+          <div class="form-grid">
+            <div class="field">
+              <label for="inputData">Data da Medição</label>
+              <input type="date" id="inputData" required>
+            </div>
+          </div>
+
+          <div class="form-grid two-cols" style="margin-top: 16px;">
+            <div class="field">
+              <label for="inputPeso">Peso (kg)</label>
+              <input type="text" id="inputPeso" inputmode="decimal" placeholder="Ex: 7,430">
+              <div class="hint">Use vírgula ou ponto</div>
+            </div>
+
+            <div class="field">
+              <label for="inputTamanho">Tamanho / Altura (cm)</label>
+              <input type="text" id="inputTamanho" inputmode="decimal" placeholder="Ex: 62,0">
+              <div class="hint">Opcional se só mediu o peso</div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary" id="btnSalvar">Salvar na Planilha</button>
+          <div id="msgFeedback" class="alert"></div>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Últimos Registros</div>
+        <div id="tabelaRecentes" class="loading">Carregando histórico...</div>
+      </div>
+    </section>
+
+    <!-- ABA 2: GRÁFICOS -->
+    <section id="sec-graficos" class="section">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Peso Atual</div>
+          <div class="stat-value" id="statPeso">--</div>
+          <div class="stat-sub" id="statPesoData">--</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Altura Atual</div>
+          <div class="stat-value" id="statAltura">--</div>
+          <div class="stat-sub" id="statAlturaData">--</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Ganho Total</div>
+          <div class="stat-value" id="statGanhoTotal">--</div>
+          <div class="stat-sub">desde o 1º registro</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Última Variação</div>
+          <div class="stat-value" id="statUltimaVar">--</div>
+          <div class="stat-sub">em relação à anterior</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Evolução do Peso (kg)</div>
+        <div class="chart-box"><canvas id="canvasPeso"></canvas></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Evolução da Altura (cm)</div>
+        <div class="chart-box"><canvas id="canvasAltura"></canvas></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Variação de Peso por Medição (kg)</div>
+        <div class="chart-box"><canvas id="canvasDiff"></canvas></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // COLE AQUI A URL DO APP DA WEB GERADA NO GOOGLE APPS SCRIPT (termina com /exec)
+    const API_URL = 'AKfycbyJKL_lOClNZE2LWRilBxO9wp4oymVbifxp2CpwSTMsCl-gBm5pliv28299gsI_yPZ0';
+
+    let registrosGlobais = [];
+    let chartPeso = null;
+    let chartAltura = null;
+    let chartDiff = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      definirDataHoje();
+      carregarDados();
+    });
+
+    function definirDataHoje() {
+      const hoje = new Date();
+      const ano = hoje.getFullYear();
+      const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+      const dia = String(hoje.getDate()).padStart(2, '0');
+      document.getElementById('inputData').value = `${ano}-${mes}-${dia}`;
+    }
+
+    function trocarAba(aba) {
+      document.getElementById('sec-registro').classList.toggle('active', aba === 'registro');
+      document.getElementById('sec-graficos').classList.toggle('active', aba === 'graficos');
+      document.getElementById('btnTabRegistro').classList.toggle('active', aba === 'registro');
+      document.getElementById('btnTabGraficos').classList.toggle('active', aba === 'graficos');
+
+      if (aba === 'graficos' && registrosGlobais.length > 0) {
+        renderizarGraficos(registrosGlobais);
+      }
+    }
+
+    async function carregarDados() {
+      try {
+        const response = await fetch(API_URL, { method: 'GET' });
+        const res = await response.json();
+
+        if (!res || !res.sucesso) {
+          throw new Error(res ? res.mensagem : 'Resposta inválida da API.');
+        }
+
+        registrosGlobais = res.registros || [];
+        renderizarTabela(registrosGlobais);
+        atualizarCardsResumo(registrosGlobais);
+
+        if (document.getElementById('sec-graficos').classList.contains('active')) {
+          renderizarGraficos(registrosGlobais);
+        }
+      } catch (err) {
+        document.getElementById('tabelaRecentes').innerHTML =
+          `<div class="alert error" style="display:block">Erro ao carregar dados: ${err.message}</div>`;
+      }
+    }
+
+    async function enviarFormulario(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnSalvar');
+      const feedback = document.getElementById('msgFeedback');
+      feedback.className = 'alert';
+      feedback.textContent = '';
+
+      const dados = {
+        data: document.getElementById('inputData').value,
+        peso: document.getElementById('inputPeso').value.trim(),
+        tamanho: document.getElementById('inputTamanho').value.trim()
+      };
+
+      if (!dados.peso && !dados.tamanho) {
+        mostrarFeedback('Preencha pelo menos o Peso ou o Tamanho.', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Salvando...';
+
+      try {
+        // text/plain evita erro de CORS (preflight OPTIONS) no Apps Script
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(dados)
+        });
+
+        const res = await response.json();
+
+        if (!res || !res.sucesso) {
+          throw new Error(res ? res.mensagem : 'Erro ao salvar.');
+        }
+
+        document.getElementById('inputPeso').value = '';
+        document.getElementById('inputTamanho').value = '';
+        mostrarFeedback(res.mensagem || 'Registro salvo com sucesso!', 'success');
+
+        registrosGlobais = res.registros || [];
+        renderizarTabela(registrosGlobais);
+        atualizarCardsResumo(registrosGlobais);
+      } catch (err) {
+        mostrarFeedback('Falha ao salvar: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Salvar na Planilha';
+      }
+    }
+
+    function mostrarFeedback(texto, tipo) {
+      const el = document.getElementById('msgFeedback');
+      el.textContent = texto;
+      el.className = 'alert ' + tipo;
+    }
+
+    function formatarNumero(num, casas) {
+      if (num === null || num === undefined || isNaN(num)) return '—';
+      return Number(num).toFixed(casas).replace('.', ',');
+    }
+
+    function renderizarTabela(registros) {
+      const container = document.getElementById('tabelaRecentes');
+      if (!registros.length) {
+        container.innerHTML = '<div class="loading">Nenhum registro encontrado ainda.</div>';
+        return;
+      }
+
+      const recentes = [...registros].reverse().slice(0, 6);
+      let html = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Peso (kg)</th>
+                <th>Altura (cm)</th>
+                <th>Variação</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      recentes.forEach((r) => {
+        let diffHtml = '—';
+        if (r.diferenca !== null && r.diferenca !== undefined) {
+          const sinal = r.diferenca > 0 ? '+' : '';
+          const classe = r.diferenca >= 0 ? 'badge-pos' : 'badge-neg';
+          diffHtml = `<span class="${classe}">${sinal}${formatarNumero(r.diferenca, 3)} kg</span>`;
+        }
+
+        html += `
+          <tr>
+            <td>${r.dataFormatada}</td>
+            <td><strong>${r.peso !== null ? formatarNumero(r.peso, 3) : '—'}</strong></td>
+            <td>${r.tamanho !== null ? formatarNumero(r.tamanho, 1) : '—'}</td>
+            <td>${diffHtml}</td>
+          </tr>
+        `;
+      });
+
+      html += '</tbody></table></div>';
+      container.innerHTML = html;
+    }
+
+    function atualizarCardsResumo(registros) {
+      const comPeso = registros.filter(r => r.peso !== null);
+      const comAltura = registros.filter(r => r.tamanho !== null);
+
+      if (comPeso.length > 0) {
+        const primeiro = comPeso[0];
+        const ultimo = comPeso[comPeso.length - 1];
+        const ganhoTotal = ultimo.peso - primeiro.peso;
+
+        document.getElementById('statPeso').textContent = formatarNumero(ultimo.peso, 3) + ' kg';
+        document.getElementById('statPesoData').textContent = 'em ' + ultimo.dataFormatada;
+        document.getElementById('statGanhoTotal').textContent =
+          (ganhoTotal >= 0 ? '+' : '') + formatarNumero(ganhoTotal, 3) + ' kg';
+
+        if (ultimo.diferenca !== null) {
+          const sinal = ultimo.diferenca >= 0 ? '+' : '';
+          document.getElementById('statUltimaVar').textContent =
+            sinal + formatarNumero(ultimo.diferenca, 3) + ' kg';
+        }
+      }
+
+      if (comAltura.length > 0) {
+        const ultimaAlt = comAltura[comAltura.length - 1];
+        document.getElementById('statAltura').textContent = formatarNumero(ultimaAlt.tamanho, 1) + ' cm';
+        document.getElementById('statAlturaData').textContent = 'em ' + ultimaAlt.dataFormatada;
+      }
+    }
+
+    function renderizarGraficos(registros) {
+      const labels = registros.map(r => r.dataFormatada);
+      const dadosPeso = registros.map(r => r.peso);
+      const dadosAltura = registros.map(r => r.tamanho);
+      const dadosDiff = registros.map(r => r.diferenca);
+
+      if (chartPeso) chartPeso.destroy();
+      if (chartAltura) chartAltura.destroy();
+      if (chartDiff) chartDiff.destroy();
+
+      const opcoesBase = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false } },
+          y: { grid: { color: '#f1f5f9' } }
+        }
+      };
+
+      chartPeso = new Chart(document.getElementById('canvasPeso'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Peso (kg)',
+            data: dadosPeso,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, 0.10)',
+            borderWidth: 2.5,
+            pointRadius: 4,
+            pointBackgroundColor: '#2563eb',
+            fill: true,
+            tension: 0.3,
+            spanGaps: true
+          }]
+        },
+        options: opcoesBase
+      });
+
+      chartAltura = new Chart(document.getElementById('canvasAltura'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Altura (cm)',
+            data: dadosAltura,
+            borderColor: '#0d9488',
+            backgroundColor: 'rgba(13, 148, 136, 0.10)',
+            borderWidth: 2.5,
+            pointRadius: 4,
+            pointBackgroundColor: '#0d9488',
+            fill: true,
+            tension: 0.3,
+            spanGaps: true
+          }]
+        },
+        options: opcoesBase
+      });
+
+      const coresBarras = dadosDiff.map(v => (v !== null && v < 0) ? '#ef4444' : '#10b981');
+      chartDiff = new Chart(document.getElementById('canvasDiff'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Variação (kg)',
+            data: dadosDiff,
+            backgroundColor: coresBarras,
+            borderRadius: 6
+          }]
+        },
+        options: opcoesBase
+      });
+    }
+  </script>
+</body>
+</html>
