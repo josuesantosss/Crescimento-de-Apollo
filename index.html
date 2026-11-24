@@ -14,7 +14,6 @@
       --border: #e2e8f0;
       --primary: #2563eb;
       --primary-hover: #1d4ed8;
-      --teal: #0d9488;
       --success-bg: #ecfdf5;
       --success-text: #065f46;
       --error-bg: #fef2f2;
@@ -51,7 +50,6 @@
       font-size: 1.55rem;
       font-weight: 700;
       letter-spacing: -0.02em;
-      color: var(--text);
     }
 
     header p {
@@ -60,7 +58,6 @@
       margin-top: 4px;
     }
 
-    /* Navegação em 2 abas (Segmented Control) */
     .tabs {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -116,9 +113,6 @@
       font-size: 1.05rem;
       font-weight: 600;
       margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
     }
 
     .form-grid {
@@ -149,7 +143,6 @@
       font-size: 1rem;
       color: var(--text);
       background: #fcfdff;
-      transition: border-color 0.2s, box-shadow 0.2s;
     }
 
     .field input:focus {
@@ -178,14 +171,8 @@
       transition: background 0.2s, opacity 0.2s;
     }
 
-    .btn-primary:hover {
-      background: var(--primary-hover);
-    }
-
-    .btn-primary:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .alert {
       display: none;
@@ -196,19 +183,9 @@
       margin-top: 14px;
     }
 
-    .alert.success {
-      display: block;
-      background: var(--success-bg);
-      color: var(--success-text);
-    }
+    .alert.success { display: block; background: var(--success-bg); color: var(--success-text); }
+    .alert.error { display: block; background: var(--error-bg); color: var(--error-text); }
 
-    .alert.error {
-      display: block;
-      background: var(--error-bg);
-      color: var(--error-text);
-    }
-
-    /* Cards de resumo */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -217,9 +194,7 @@
     }
 
     @media (min-width: 600px) {
-      .stats-grid {
-        grid-template-columns: repeat(4, 1fr);
-      }
+      .stats-grid { grid-template-columns: repeat(4, 1fr); }
     }
 
     .stat-card {
@@ -235,14 +210,12 @@
       font-weight: 600;
       color: var(--muted);
       text-transform: uppercase;
-      letter-spacing: 0.03em;
     }
 
     .stat-value {
       font-size: 1.3rem;
       font-weight: 700;
       margin-top: 4px;
-      color: var(--text);
     }
 
     .stat-sub {
@@ -251,10 +224,7 @@
       margin-top: 2px;
     }
 
-    /* Tabela recente */
-    .table-wrap {
-      overflow-x: auto;
-    }
+    .table-wrap { overflow-x: auto; }
 
     table {
       width: 100%;
@@ -275,19 +245,10 @@
       font-weight: 600;
     }
 
-    tr:last-child td {
-      border-bottom: none;
-    }
+    tr:last-child td { border-bottom: none; }
 
-    .badge-pos {
-      color: #047857;
-      font-weight: 600;
-    }
-
-    .badge-neg {
-      color: #dc2626;
-      font-weight: 600;
-    }
+    .badge-pos { color: #047857; font-weight: 600; }
+    .badge-neg { color: #dc2626; font-weight: 600; }
 
     .chart-box {
       position: relative;
@@ -358,7 +319,7 @@
 
     <!-- ABA 2: GRÁFICOS -->
     <section id="sec-graficos" class="section">
-      <div class="stats-grid" id="cardsResumo">
+      <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-label">Peso Atual</div>
           <div class="stat-value" id="statPeso">--</div>
@@ -383,34 +344,30 @@
 
       <div class="card">
         <div class="card-title">Evolução do Peso (kg)</div>
-        <div class="chart-box">
-          <canvas id="canvasPeso"></canvas>
-        </div>
+        <div class="chart-box"><canvas id="canvasPeso"></canvas></div>
       </div>
 
       <div class="card">
         <div class="card-title">Evolução da Altura (cm)</div>
-        <div class="chart-box">
-          <canvas id="canvasAltura"></canvas>
-        </div>
+        <div class="chart-box"><canvas id="canvasAltura"></canvas></div>
       </div>
 
       <div class="card">
         <div class="card-title">Variação de Peso por Medição (kg)</div>
-        <div class="chart-box">
-          <canvas id="canvasDiff"></canvas>
-        </div>
+        <div class="chart-box"><canvas id="canvasDiff"></canvas></div>
       </div>
     </section>
   </div>
 
   <script>
+    // COLE AQUI A URL DO APP DA WEB GERADA NO GOOGLE APPS SCRIPT (termina com /exec)
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyJKL_lOClNZE2LWRilBxO9wp4oymVbifxp2CpwSTMsCl-gBm5pliv28299gsI_yPZ0/exec';
+
     let registrosGlobais = [];
     let chartPeso = null;
     let chartAltura = null;
     let chartDiff = null;
 
-    // Inicialização ao abrir a página
     document.addEventListener('DOMContentLoaded', () => {
       definirDataHoje();
       carregarDados();
@@ -435,33 +392,29 @@
       }
     }
 
-    function carregarDados() {
-      google.script.run
-        .withSuccessHandler(processarRespostaDados)
-        .withFailureHandler((err) => {
-          document.getElementById('tabelaRecentes').innerHTML =
-            `<div class="alert error" style="display:block">Erro ao carregar dados: ${err.message}</div>`;
-        })
-        .obterDados();
-    }
+    async function carregarDados() {
+      try {
+        const response = await fetch(API_URL, { method: 'GET' });
+        const res = await response.json();
 
-    function processarRespostaDados(res) {
-      if (!res || !res.sucesso) {
+        if (!res || !res.sucesso) {
+          throw new Error(res ? res.mensagem : 'Resposta inválida da API.');
+        }
+
+        registrosGlobais = res.registros || [];
+        renderizarTabela(registrosGlobais);
+        atualizarCardsResumo(registrosGlobais);
+
+        if (document.getElementById('sec-graficos').classList.contains('active')) {
+          renderizarGraficos(registrosGlobais);
+        }
+      } catch (err) {
         document.getElementById('tabelaRecentes').innerHTML =
-          `<div class="alert error" style="display:block">${res ? res.mensagem : 'Erro desconhecido.'}</div>`;
-        return;
-      }
-
-      registrosGlobais = res.registros || [];
-      renderizarTabela(registrosGlobais);
-      atualizarCardsResumo(registrosGlobais);
-
-      if (document.getElementById('sec-graficos').classList.contains('active')) {
-        renderizarGraficos(registrosGlobais);
+          `<div class="alert error" style="display:block">Erro ao carregar dados: ${err.message}</div>`;
       }
     }
 
-    function enviarFormulario(e) {
+    async function enviarFormulario(e) {
       e.preventDefault();
       const btn = document.getElementById('btnSalvar');
       const feedback = document.getElementById('msgFeedback');
@@ -482,30 +435,33 @@
       btn.disabled = true;
       btn.textContent = 'Salvando...';
 
-      google.script.run
-        .withSuccessHandler((res) => {
-          btn.disabled = false;
-          btn.textContent = 'Salvar na Planilha';
+      try {
+        // text/plain evita erro de CORS (preflight OPTIONS) no Apps Script
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(dados)
+        });
 
-          if (!res || !res.sucesso) {
-            mostrarFeedback(res ? res.mensagem : 'Erro ao salvar.', 'error');
-            return;
-          }
+        const res = await response.json();
 
-          document.getElementById('inputPeso').value = '';
-          document.getElementById('inputTamanho').value = '';
-          mostrarFeedback(res.mensagem || 'Registro salvo com sucesso!', 'success');
+        if (!res || !res.sucesso) {
+          throw new Error(res ? res.mensagem : 'Erro ao salvar.');
+        }
 
-          registrosGlobais = res.registros || [];
-          renderizarTabela(registrosGlobais);
-          atualizarCardsResumo(registrosGlobais);
-        })
-        .withFailureHandler((err) => {
-          btn.disabled = false;
-          btn.textContent = 'Salvar na Planilha';
-          mostrarFeedback('Falha de comunicação: ' + err.message, 'error');
-        })
-        .salvarRegistro(dados);
+        document.getElementById('inputPeso').value = '';
+        document.getElementById('inputTamanho').value = '';
+        mostrarFeedback(res.mensagem || 'Registro salvo com sucesso!', 'success');
+
+        registrosGlobais = res.registros || [];
+        renderizarTabela(registrosGlobais);
+        atualizarCardsResumo(registrosGlobais);
+      } catch (err) {
+        mostrarFeedback('Falha ao salvar: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Salvar na Planilha';
+      }
     }
 
     function mostrarFeedback(texto, tipo) {
@@ -526,7 +482,6 @@
         return;
       }
 
-      // Mostra os 6 mais recentes primeiro
       const recentes = [...registros].reverse().slice(0, 6);
       let html = `
         <div class="table-wrap">
@@ -605,20 +560,17 @@
       const opcoesBase = {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false }
-        },
+        plugins: { legend: { display: false } },
         scales: {
           x: { grid: { display: false } },
           y: { grid: { color: '#f1f5f9' } }
         }
       };
 
-      // 1. Gráfico de Peso
       chartPeso = new Chart(document.getElementById('canvasPeso'), {
         type: 'line',
         data: {
-          labels: labels,
+          labels,
           datasets: [{
             label: 'Peso (kg)',
             data: dadosPeso,
@@ -635,11 +587,10 @@
         options: opcoesBase
       });
 
-      // 2. Gráfico de Altura (ignora lacunas vazias suavemente)
       chartAltura = new Chart(document.getElementById('canvasAltura'), {
         type: 'line',
         data: {
-          labels: labels,
+          labels,
           datasets: [{
             label: 'Altura (cm)',
             data: dadosAltura,
@@ -656,12 +607,11 @@
         options: opcoesBase
       });
 
-      // 3. Gráfico de Variação de Peso
       const coresBarras = dadosDiff.map(v => (v !== null && v < 0) ? '#ef4444' : '#10b981');
       chartDiff = new Chart(document.getElementById('canvasDiff'), {
         type: 'bar',
         data: {
-          labels: labels,
+          labels,
           datasets: [{
             label: 'Variação (kg)',
             data: dadosDiff,
