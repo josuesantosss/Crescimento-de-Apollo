@@ -1,1 +1,0 @@
-# Crescimento-de-Apollo
